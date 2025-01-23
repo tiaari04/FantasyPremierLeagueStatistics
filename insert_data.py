@@ -43,10 +43,11 @@ def insert_into_players():
 
     for player in response["elements"]:
         cursor.execute("""
-            INSERT INTO players (id, name, team, position, price, total_points, ict, most_transferred_in, most_transferred_out, owned_percentage)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            INSERT INTO players (id, name, team, position, price, total_points, goals_scored, assists, clean_sheets, ict, most_transferred_in, most_transferred_out, owned_percentage)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """, (player["id"], player["web_name"], player["team"], pos_number_to_word(player["element_type"]), player["now_cost"] / 10, player["total_points"], 
-              player["ict_index"], player["transfers_in_event"], player["transfers_out_event"], player["selected_by_percent"]))
+              player["goals_scored"], player["assists"], player["clean_sheets"], player["ict_index"], player["transfers_in_event"], player["transfers_out_event"], 
+              player["selected_by_percent"]))
 
     connection.commit()
 
@@ -84,10 +85,10 @@ def insert_into_fixtures():
 
     for fixture in fixtures:
         cursor.execute("""
-            INSERT INTO fixtures (id, home_team_id, away_team_id, home_difficulty, away_difficulty)
-            VALUES (%s, %s, %s, %s, %s);
+            INSERT INTO fixtures (id, home_team_id, away_team_id, home_difficulty, away_difficulty, gameweek_id)
+            VALUES (%s, %s, %s, %s, %s, %s);
         """, (fixture["id"], fixture["team_h"], fixture["team_a"], fixture["team_h_difficulty"],
-              fixture["team_a_difficulty"]))
+              fixture["team_a_difficulty"], fixture["event"]))
 
     connection.commit()
 
@@ -102,36 +103,67 @@ def insert_into_player_stats():
         
         for stat_entry in stats:
             stat_type = stat_entry.get("identifier")  # The key indicating the type of stat
-            players = stat_entry.get("a", [])  # Assuming "a" contains the player data (adjust if necessary)
+            
+            # Process both "away" (a) and "home" (h) players
+            for location in ["a", "h"]:
+                players = stat_entry.get(location, [])
+                
+                if stat_type == "goals_scored":
+                    for player_stat in players:
+                        player_id = player_stat["element"]
+                        goals = player_stat["value"]
 
-            if stat_type == "goals_scored":
-                for player_stat in players:
-                    player_id = player_stat["element"]
-                    goals = player_stat["value"]
+                        cursor.execute("""
+                        SELECT COUNT(*)
+                        FROM player_stats
+                        WHERE fixture_id = %s AND player_id = %s
+                        """, (fixture_id, player_id))
+                        exists = cursor.fetchone()[0]
 
-                    # Insert goals data into player_stats table
-                    cursor.execute("""
-                    INSERT INTO player_stats (fixture_id, player_id, goals, assists)
-                    VALUES (%s, %s, %s, %s)
-                    """, (fixture_id, player_id, goals, 0))  # 0 assists as placeholder
+                        if exists:
+                            # Update if the row exists
+                            cursor.execute("""
+                            UPDATE player_stats
+                            SET goals = %s
+                            WHERE fixture_id = %s AND player_id = %s
+                            """, (assists, fixture_id, player_id))
+                        else:
+                            cursor.execute("""
+                            INSERT INTO player_stats (fixture_id, player_id, goals, assists)
+                            VALUES (%s, %s, %s, %s)
+                            """, (fixture_id, player_id, goals, 0))  # 0 assists as placeholder
 
-            elif stat_type == "assists":
-                for player_stat in players:
-                    player_id = player_stat["element"]
-                    assists = player_stat["value"]
+                elif stat_type == "assists":
+                    for player_stat in players:
+                        player_id = player_stat["element"]
+                        assists = player_stat["value"]
 
-                    # Update assists in player_stats table
-                    cursor.execute("""
-                    UPDATE player_stats
-                    SET assists = %s
-                    WHERE fixture_id = %s AND player_id = %s
-                    """, (assists, fixture_id, player_id))
+                        cursor.execute("""
+                        SELECT COUNT(*)
+                        FROM player_stats
+                        WHERE fixture_id = %s AND player_id = %s
+                        """, (fixture_id, player_id))
+                        exists = cursor.fetchone()[0]
+
+                        if exists:
+                            # Update if the row exists
+                            cursor.execute("""
+                            UPDATE player_stats
+                            SET assists = %s
+                            WHERE fixture_id = %s AND player_id = %s
+                            """, (assists, fixture_id, player_id))
+                        else:
+                            # Insert if the row does not exist
+                            cursor.execute("""
+                            INSERT INTO player_stats (fixture_id, player_id, goals, assists)
+                            VALUES (%s, %s, %s, %s)
+                            """, (fixture_id, player_id, 0, assists))  # 0 goals as placeholder
 
     connection.commit()
 
 def main():
     connect()
-    # insert_into_teams()
+    #insert_into_teams()
     # insert_into_players()
     # insert_into_gameweeks()
     # insert_into_fixtures()

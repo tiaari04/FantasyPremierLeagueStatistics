@@ -12,20 +12,23 @@ cursor = None
 def create_tables():
     commands = (
         """
-        CREATE TABLE teams (
+        CREATE TABLE IF NOT EXISTS teams (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             points INTEGER
         );
         """,
         """
-        CREATE TABLE players (
+        CREATE TABLE IF NOT EXISTS players (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
         team INTEGER NOT NULL,
         position TEXT,
         price FLOAT,
         total_points INTEGER,
+        goals_scored INTEGER,
+        assists INTEGER,
+        clean_sheets INTEGER,
         ict FLOAT,
         most_transferred_in INTEGER,
         most_transferred_out INTEGER,
@@ -34,7 +37,7 @@ def create_tables():
         );
         """,
         """
-        CREATE TABLE gameweeks (
+        CREATE TABLE IF NOT EXISTS gameweeks (
             id INTEGER PRIMARY KEY,
             name TEXT,
             deadline_time TEXT,
@@ -45,18 +48,19 @@ def create_tables():
         );
         """,
         """
-        CREATE TABLE fixtures (
+        CREATE TABLE IF NOT EXISTS fixtures (
             id INTEGER PRIMARY KEY,
             home_team_id INTEGER,
             away_team_id INTEGER,
             home_difficulty INTEGER,
             away_difficulty INTEGER,
+            gameweek_id INTEGER,
             FOREIGN KEY (home_team_id) REFERENCES teams(id),
             FOREIGN KEY (away_team_id) REFERENCES teams(id)
         );
         """,
         """
-        CREATE TABLE player_stats (
+        CREATE TABLE IF NOT EXISTS player_stats (
             id SERIAL PRIMARY KEY,
             fixture_id INTEGER,
             player_id INTEGER,
@@ -72,7 +76,6 @@ def create_tables():
 
     cursor.close()
     connection.commit()
-    print("done")
 
 def connect():
     global connection, cursor
@@ -84,7 +87,6 @@ def connect():
                                 port = port_id)
         
         cursor = connection.cursor()
-        print("working")
 
     except Exception as error:
         print(error)
