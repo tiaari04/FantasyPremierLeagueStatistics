@@ -1,0 +1,140 @@
+Query to get top 15 players based on points.
+
+SELECT 
+    p.name AS "Player",
+    t.name AS "Team",
+    p.total_points AS "Total Points",
+    p.position AS "Position"
+FROM 
+    players p
+JOIN 
+    teams t ON p.team = t.id
+ORDER BY 
+    p.total_points DESC
+LIMIT 15
+
+Query to get top 10 forwards based on points and for those forwards 
+get their goals and assists.
+
+SELECT 
+    p.name AS "Forward",
+    t.name AS "Team",
+    p.total_points as "Total Points",
+    p.goals_scored AS "Goals",
+    p.assists AS "Assists"
+FROM 
+    players p
+JOIN 
+    teams t ON p.team = t.id
+WHERE
+    p.position = 'FORWARD'
+ORDER BY 
+    p.total_points DESC
+LIMIT 10
+
+Query to get top 10 midfielders based on points and for those midfielders 
+get their goals, assists and clean sheets
+
+SELECT 
+    p.name AS "Midfielder",
+    t.name AS "Team",
+    p.total_points as "Total Points",
+    p.goals_scored AS "Goals",
+    p.assists AS "Assists",
+    p.clean_sheets AS "Clean Sheets"
+FROM 
+    players p
+JOIN 
+    teams t ON p.team = t.id
+WHERE
+    p.position = 'MIDFIELDER'
+ORDER BY 
+    p.total_points DESC
+LIMIT 10
+
+Query to get top 10 defenders based on points and for those players 
+get their clean , goals and assists
+
+SELECT 
+    p.name AS "Defender",
+    t.name AS "Team",
+    p.total_points as "Total Points",
+    p.goals_scored AS "Goals",
+    p.assists AS "Assists",
+    p.clean_sheets AS "Clean Sheets"
+FROM 
+    players p
+JOIN 
+    teams t ON p.team = t.id
+WHERE
+    p.position = 'DEFENDER'
+ORDER BY 
+    p.total_points DESC
+LIMIT 10
+
+Query to get top 5 goalkeepers based on points and for those players 
+get their clean , goals and assists
+
+SELECT 
+    p.name AS "Goalkeeper",
+    t.name AS "Team",
+    p.total_points as "Total Points",
+    p.clean_sheets AS "Clean Sheets"
+FROM 
+    players p
+JOIN 
+    teams t ON p.team = t.id
+WHERE
+    p.position = 'GOALKEEPER'
+ORDER BY 
+    p.total_points DESC
+LIMIT 5
+
+Query to get top players by points per million.
+
+SELECT 
+    p.name AS "Player Name",
+    t.name AS "Team",
+    p.position AS "Position",
+    p.price AS "Price (M)",
+    p.total_points AS "Total Points",
+    ROUND(CAST(p.total_points / p.price AS NUMERIC), 2) AS "Points Per Million",
+    p.ict AS "ICT Index"
+FROM 
+    players p
+JOIN 
+    teams t ON p.team = t.id
+ORDER BY 
+    "Points Per Million" DESC, 
+    p.ict DESC
+LIMIT 30
+
+Query to get the top 15 players in the last 4 gameweeks
+
+SELECT 
+    p.name AS "Player Name",
+    SUM(ps.goals) AS "Total Goals",
+    SUM(ps.assists) AS "Total Assists",
+    COUNT(DISTINCT ps.fixture_id) AS "Games Contributed To",
+    SUM(ps.goals * 4 + ps.assists * 3) AS "Total Points"
+FROM 
+    players p
+JOIN 
+    player_stats ps ON p.id = ps.player_id
+JOIN 
+    fixtures f ON ps.fixture_id = f.id
+JOIN 
+    gameweeks gw ON f.gameweek_id = gw.id
+WHERE 
+    gw.id IN (
+        SELECT id 
+        FROM gameweeks 
+        WHERE finished = TRUE 
+        ORDER BY id DESC
+        LIMIT 4
+    )
+GROUP BY 
+    p.id
+ORDER BY 
+    "Total Points" DESC, "Total Goals" DESC, "Total Assists" DESC
+LIMIT 15
