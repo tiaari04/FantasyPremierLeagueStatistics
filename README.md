@@ -38,9 +38,9 @@ Managed data structures for API responses, enabling seamless parsing and transfo
 git clone <repository-url>
 cd FantasyPremierLeagueStatistics
 ```
-2. Setup PoostgreSQL <br/>
-Download and install PostgreSQL from the postgresql website, create a project and put in your credentials.
-Put those same creadentials into the top of the files update_fpl.py, create_tables.py, and insert_data.py into the empty fields.
+2. Setup PostgreSQL <br/>
+Download and install PostgreSQL from the PostgreSQL website, create a project and put in your credentials.
+Put those same credentials into the top of the files update_fpl.py, create_tables.py, and insert_data.py into the empty fields.
 For example:
 ```
 hostname = 'localhost' # since it's on your local computer
@@ -55,7 +55,7 @@ First install psycopg2
 ```
 pip install psycopg2
 ```
-Then in the termianl run these two commands to set up the tables
+Then in the terminal run these two commands to set up the tables
 ```
 python create_tables.py
 python insert_data.py
