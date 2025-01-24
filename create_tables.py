@@ -1,10 +1,10 @@
 import psycopg2
 
-hostname = 'localhost'
-database = 'FPLstats'
-username = 'postgres'
-pwd = 'jamPostGres04@'
-port_id = 5432
+hostname = ''
+database = ''
+username = ''
+pwd = ''
+port_id = 5
 
 connection = None
 cursor = None
@@ -90,11 +90,6 @@ def connect():
 
     except Exception as error:
         print(error)
-    # finally:
-    #     if cursor is not None:
-    #         cursor.close()
-    #     if connection is not None:
-    #         connection.close()
 
 def main():
     connect()

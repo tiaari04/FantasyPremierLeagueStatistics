@@ -1,11 +1,11 @@
 import psycopg2
 import requests
 
-hostname = 'localhost'
-database = 'FPLstats'
-username = 'postgres'
-pwd = 'jamPostGres04@'
-port_id = 5432
+hostname = ''
+database = ''
+username = ''
+pwd = ''
+port_id = 5
 
 connection = None
 cursor = None
@@ -163,10 +163,10 @@ def insert_into_player_stats():
 
 def main():
     connect()
-    #insert_into_teams()
-    # insert_into_players()
-    # insert_into_gameweeks()
-    # insert_into_fixtures()
+    insert_into_teams()
+    insert_into_players()
+    insert_into_gameweeks()
+    insert_into_fixtures()
     insert_into_player_stats()
 
     cursor.close()
