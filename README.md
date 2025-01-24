@@ -26,9 +26,6 @@ Enabled actionable insights with interactive filtering and drill-down options.
 * FPL API:
 Primary data source for retrieving real-time FPL statistics, including players, teams, and fixtures
 
-* GitHub:
-Hosted the Power BI report file and Python scripts for automation and reproducibility.
-
 * JSON:
 Managed data structures for API responses, enabling seamless parsing and transformation.
 
